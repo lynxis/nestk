@@ -68,20 +68,25 @@ public:
   void setDualRgbIR(bool enable);
 
 public:
-  void depthCallBack(uint16_t *buf, int width, int height);
-  void rgbCallBack(uint8_t *buf, int width, int height);
-  void irCallBack(uint8_t *buf, int width, int height);
+  void depthCallBack(uint16_t *buf);
+  void rgbCallBack(uint8_t *buf);
+  void irCallBack(uint8_t *buf);
 
 protected:
   virtual void run();
   void startKinect();
 
 private:
+  void setVideoMode(freenect_frame_mode mode);
+  void setDepthMode(freenect_frame_mode mode);
+
   RGBDImage m_current_image;
   bool m_depth_transmitted;
   bool m_rgb_transmitted;
   freenect_context *f_ctx;
   freenect_device *f_dev;
+  freenect_frame_mode f_video_mode;
+  freenect_frame_mode f_depth_mode;
   bool m_ir_mode;
   bool m_dual_ir_rgb;
   int m_device_id;
