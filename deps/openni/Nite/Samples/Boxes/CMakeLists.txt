@@ -28,6 +28,7 @@ target_link_libraries(
   XnVNite
   ${GLUT_LIB} 
   ${OPENGL_LIB}
+  GL
 )
 
 add_dependencies(${VIEWER_EXE} ${OPENNI_LIB_NAME})

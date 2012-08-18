@@ -27,6 +27,7 @@ target_link_libraries(
 	${OPENNI_LIB_NAME} 
 	${GLUT_LIB} 
 	${OPENGL_LIB}
+    GL
 )
 
 add_dependencies(${VIEWER_EXE} ${OPENNI_LIB_NAME})
