@@ -36,6 +36,7 @@ target_link_libraries(
 	${LIBDL} 
 	${TINYXML_LIB_NAME}
 	${APPLE_FRAMEWORKS_LDFLAGS}
+	${CMAKE_THREAD_LIBS_INIT}
 )
 
 # Set path where to install the target, lib, runtime. 

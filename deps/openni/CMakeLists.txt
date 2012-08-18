@@ -77,6 +77,11 @@ if(NOT WIN32)
   SET(USB_LIBRARY ${LIBUSB_1_LIBRARY})
 endif()
 
+# Find pthreads on Linux
+IF(UNIX)
+  FIND_PACKAGE(Threads REQUIRED)
+ENDIF()
+
 # FIXME: find jpeg on Mac.
 if (NOT JPEG_FOUND)
 	message(FATAL_ERROR "Could not find library dependencies")
