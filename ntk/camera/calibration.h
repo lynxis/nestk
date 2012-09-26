@@ -51,6 +51,9 @@ public:
   /*! Update depth_pose and rgb_pose from read parameters. */
   void updatePoses();
 
+  /*! Initialize undistortions maps */
+  void initUndistortionMaps();
+
   /*! Load calibration parameters from a yaml file. */
   void loadFromFile(const char* filename);
 

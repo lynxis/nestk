@@ -195,6 +195,10 @@ void RGBDCalibration :: loadFromFile(const char* filename)
     rgb_pose = new Pose3D();
     updatePoses();
 
+    initUndistortionMaps();
+}
+
+void RGBDCalibration :: initUndistortionMaps() {
     initUndistortRectifyMap(rgb_intrinsics, rgb_distortion,
                             Mat(), rgb_intrinsics, rgb_size, CV_16SC2,
                             rgb_undistort_map1, rgb_undistort_map2);
