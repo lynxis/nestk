@@ -33,7 +33,7 @@ removePlane(ntk::Mesh &mesh)
             addVertex(mesh, new_mesh, i);
             continue;
         }
-
+/*
         if (acos(normal.dot(m_plane.normal())) > (m_max_normal_angle*M_PI/180.0))
         {
             addVertex(mesh, new_mesh, i);
@@ -42,7 +42,7 @@ removePlane(ntk::Mesh &mesh)
             new_mesh.normals.push_back(m_plane.normal());
             new_mesh.colors.push_back(mesh.colors[i]);
             continue;
-        }
+        }*/
     }
     mesh = new_mesh;
 }
