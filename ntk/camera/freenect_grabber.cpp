@@ -63,8 +63,8 @@ static void kinect_video_db(freenect_device *dev, void *rgb, uint32_t timestamp)
 
 void FreenectGrabber :: irCallBack(uint8_t *buf)
 {
-    ntk_assert(f_video_mode.width == m_current_image.rawIntensity().cols, "Bad width");
-    ntk_assert(f_video_mode.height == m_current_image.rawIntensity().rows, "Bad height");
+//    ntk_assert(f_video_mode.width == m_current_image.rawIntensity().cols, "Bad width");
+//    ntk_assert(f_video_mode.height == m_current_image.rawIntensity().rows, "Bad height");
     int width = f_video_mode.width;
     int height = f_video_mode.height;
     float* intensity_buf = m_current_image.rawIntensityRef().ptr<float>();
@@ -75,8 +75,8 @@ void FreenectGrabber :: irCallBack(uint8_t *buf)
 
 void FreenectGrabber :: depthCallBack(uint16_t *buf)
 {
-    ntk_assert(f_depth_mode.width == m_current_image.rawDepth().cols, "Bad width");
-    ntk_assert(f_depth_mode.height == m_current_image.rawDepth().rows, "Bad height");
+//    ntk_assert(f_depth_mode.width == m_current_image.rawDepth().cols, "Bad width");
+//    ntk_assert(f_depth_mode.height == m_current_image.rawDepth().rows, "Bad height");
     int width = f_depth_mode.width;
     int height = f_depth_mode.height;
     float* depth_buf = m_current_image.rawDepthRef().ptr<float>();
@@ -87,8 +87,8 @@ void FreenectGrabber :: depthCallBack(uint16_t *buf)
 
 void FreenectGrabber :: rgbCallBack(uint8_t *buf)
 {
-    ntk_assert(f_video_mode.width == m_current_image.rawRgb().cols, "Bad width");
-    ntk_assert(f_video_mode.height == m_current_image.rawRgb().rows, "Bad height");
+//    ntk_assert(f_video_mode.width == m_current_image.rawRgb().cols, "Bad width");
+//    ntk_assert(f_video_mode.height == m_current_image.rawRgb().rows, "Bad height");
     int width = f_video_mode.width;
     int height = f_video_mode.height;
     std::copy(buf, buf+3*width*height, (uint8_t*)m_current_image.rawRgbRef().ptr());
