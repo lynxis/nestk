@@ -47,7 +47,7 @@ static void kinect_depth_db(freenect_device *dev, void *v_depth, uint32_t timest
 {
     FreenectGrabber* grabber = reinterpret_cast<FreenectGrabber*>(freenect_get_user(dev));
     uint16_t *depth = reinterpret_cast<uint16_t*>(v_depth);
-    grabber->depthCallBack(depth, FREENECT_FRAME_W, FREENECT_FRAME_H);
+    grabber->depthCallBack(depth);
 }
 
 static void kinect_video_db(freenect_device *dev, void *rgb, uint32_t timestamp)
@@ -55,37 +55,43 @@ static void kinect_video_db(freenect_device *dev, void *rgb, uint32_t timestamp)
     FreenectGrabber* grabber = reinterpret_cast<FreenectGrabber*>(freenect_get_user(dev));
     if (grabber->irModeEnabled()) { // ir mode
 		uint8_t *ir_cast = reinterpret_cast<uint8_t*>(rgb);
-		grabber->irCallBack(ir_cast, FREENECT_FRAME_W, FREENECT_FRAME_H);
+		grabber->irCallBack(ir_cast);
 	} else { // rgb mode
 	    uint8_t *rgb_cast = reinterpret_cast<uint8_t*>(rgb);
-	    grabber->rgbCallBack(rgb_cast, FREENECT_FRAME_W, FREENECT_FRAME_H);
+	    grabber->rgbCallBack(rgb_cast);
 	}
 }
 
-void FreenectGrabber :: irCallBack(uint8_t *buf, int width, int height)
+void FreenectGrabber :: irCallBack(uint8_t *buf)
 {
-    ntk_assert(width == m_current_image.rawIntensity().cols, "Bad width");
-    ntk_assert(height == m_current_image.rawIntensity().rows, "Bad height");
+//    ntk_assert(f_video_mode.width == m_current_image.rawIntensity().cols, "Bad width");
+//    ntk_assert(f_video_mode.height == m_current_image.rawIntensity().rows, "Bad height");
+    int width = 640;
+    int height = 480;
     float* intensity_buf = m_current_image.rawIntensityRef().ptr<float>();
     for (int i = 0; i < width*height; ++i)
         *intensity_buf++ = *buf++;
     m_rgb_transmitted = false;
 }
 
-void FreenectGrabber :: depthCallBack(uint16_t *buf, int width, int height)
+void FreenectGrabber :: depthCallBack(uint16_t *buf)
 {
-    ntk_assert(width == m_current_image.rawDepth().cols, "Bad width");
-    ntk_assert(height == m_current_image.rawDepth().rows, "Bad height");
+//    ntk_assert(f_depth_mode.width == m_current_image.rawDepth().cols, "Bad width");
+//    ntk_assert(f_depth_mode.height == m_current_image.rawDepth().rows, "Bad height");
+    int width = f_depth_mode.width;
+    int height = f_depth_mode.height;
     float* depth_buf = m_current_image.rawDepthRef().ptr<float>();
     for (int i = 0; i < width*height; ++i)
         *depth_buf++ = *buf++;
     m_depth_transmitted = false;
 }
 
-void FreenectGrabber :: rgbCallBack(uint8_t *buf, int width, int height)
+void FreenectGrabber :: rgbCallBack(uint8_t *buf)
 {
-    ntk_assert(width == m_current_image.rawRgb().cols, "Bad width");
-    ntk_assert(height == m_current_image.rawRgb().rows, "Bad height");
+//    ntk_assert(f_video_mode.width == m_current_image.rawRgb().cols, "Bad width");
+//    ntk_assert(f_video_mode.height == m_current_image.rawRgb().rows, "Bad height");
+    int width = 640;
+    int height = 480;
     std::copy(buf, buf+3*width*height, (uint8_t*)m_current_image.rawRgbRef().ptr());
     cvtColor(m_current_image.rawRgb(), m_current_image.rawRgbRef(), CV_RGB2BGR);
     m_rgb_transmitted = false;
@@ -110,9 +116,9 @@ void FreenectGrabber :: setIRMode(bool ir)
     m_ir_mode = ir;
     freenect_stop_video(f_dev);
     if (!m_ir_mode)
-        freenect_set_video_format(f_dev, FREENECT_VIDEO_RGB);
+        setVideoMode(freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
     else
-        freenect_set_video_format(f_dev, FREENECT_VIDEO_IR_8BIT);
+        setVideoMode(freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_IR_8BIT));
     freenect_start_video(f_dev);
 }
 
@@ -132,6 +138,13 @@ bool FreenectGrabber :: connectToDevice()
         ntk_dbg(0) << "freenect_init() failed";
         return false;
     }
+
+    freenect_set_log_level(f_ctx, FREENECT_LOG_DEBUG);
+    freenect_select_subdevices(f_ctx, (freenect_device_flags)(FREENECT_DEVICE_MOTOR | FREENECT_DEVICE_CAMERA));
+
+    int nr_devices = freenect_num_devices (f_ctx);
+    ntk_dbg(0) << "freenect found " << nr_devices << " kinect devices\n";
+
     ntk_dbg(0) << "Connecting to device: " << m_device_id;
     if (freenect_open_device(f_ctx, &f_dev, m_device_id) < 0)
     {
@@ -140,6 +153,9 @@ bool FreenectGrabber :: connectToDevice()
     }
 
     freenect_set_user(f_dev, this);
+
+    setVideoMode(freenect_find_video_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_VIDEO_RGB));
+    setDepthMode(freenect_find_depth_mode(FREENECT_RESOLUTION_MEDIUM, FREENECT_DEPTH_11BIT));
 
     freenect_set_depth_callback(f_dev, kinect_depth_db);
     freenect_set_video_callback(f_dev, kinect_video_db);
@@ -164,13 +180,13 @@ void FreenectGrabber :: run()
     m_current_image.setCalibration(m_calib_data);
     m_rgbd_image.setCalibration(m_calib_data);
 
-    m_rgbd_image.rawRgbRef() = Mat3b(FREENECT_FRAME_H, FREENECT_FRAME_W);
-    m_rgbd_image.rawDepthRef() = Mat1f(FREENECT_FRAME_H, FREENECT_FRAME_W);
-    m_rgbd_image.rawIntensityRef() = Mat1f(FREENECT_FRAME_H, FREENECT_FRAME_W);
+    m_rgbd_image.rawRgbRef() = Mat3b(f_video_mode.height, f_video_mode.width);
+    m_rgbd_image.rawDepthRef() = Mat1f(f_video_mode.height, f_video_mode.width);
+    m_rgbd_image.rawIntensityRef() = Mat1f(f_video_mode.height, f_video_mode.width);
 
-    m_current_image.rawRgbRef() = Mat3b(FREENECT_FRAME_H, FREENECT_FRAME_W);
-    m_current_image.rawDepthRef() = Mat1f(FREENECT_FRAME_H, FREENECT_FRAME_W);
-    m_current_image.rawIntensityRef() = Mat1f(FREENECT_FRAME_H, FREENECT_FRAME_W);
+    m_current_image.rawRgbRef() = Mat3b(f_video_mode.height, f_video_mode.width);
+    m_current_image.rawDepthRef() = Mat1f(f_video_mode.height, f_video_mode.width);
+    m_current_image.rawIntensityRef() = Mat1f(f_video_mode.height, f_video_mode.width);
 
     startKinect();
     int64 last_grab_time = 0;
@@ -195,13 +211,16 @@ void FreenectGrabber :: run()
             if (m_dual_ir_rgb)
                 m_current_image.copyTo(m_rgbd_image);
             else
-                m_current_image.swap(m_rgbd_image);
+                m_current_image.copyTo(m_rgbd_image);
             m_rgb_transmitted = true;
             m_depth_transmitted = true;
         }
 
         if (m_dual_ir_rgb)
             setIRMode(!m_ir_mode);
+//        cv::Mat3b scaled_image;
+//        scaled_image = m_rgbd_image.rawRgb();
+//        cv::imwrite("/tmp/image_grabber.png", scaled_image);
         advertiseNewFrame();
 #ifdef _WIN32
         // FIXME: this is to avoid GUI freezes with libfreenect on Windows.
@@ -209,6 +228,18 @@ void FreenectGrabber :: run()
         Sleep(1);
 #endif
     }
+}
+
+void FreenectGrabber :: setDepthMode(freenect_frame_mode mode)
+{
+    f_depth_mode = mode;
+    freenect_set_depth_mode(f_dev, mode);
+}
+
+void FreenectGrabber :: setVideoMode(freenect_frame_mode mode)
+{
+    f_video_mode = mode;
+    freenect_set_video_mode(f_dev, mode);
 }
 
 } // ntk
