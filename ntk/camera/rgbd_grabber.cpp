@@ -68,7 +68,10 @@ void RGBDGrabber :: stop()
 {
     setThreadShouldExit();
     newEvent();
-    wait();
+    // wait 1sec for termination, otherwise KILL!
+    if(wait(1000)) {
+        terminate();
+    }
 }
 
 }
