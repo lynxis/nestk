@@ -67,7 +67,7 @@ estimateCurrentPose()
     frame.pose = m_relative_pose_estimator.estimatedSourcePose();
     frame.markers = m_relative_pose_estimator.detectedMarkersInSourceImage();
     // At least two markers are necessary to improve the setup estimation.
-    if (frame.markers.size() < 2)
+    if (frame.markers.size() < 3)
         return false;
 
     m_setup_frames.push_back(frame);
