@@ -390,4 +390,10 @@ void RGBDImage::setFeatures(const ntk::Ptr<FeatureSet>& new_features)
     m_features = new_features;
 }
 
+void RGBDImage::clear()
+{
+    RGBDImage empty = RGBDImage();
+    empty.swap(*this);
+}
+
 } // ntk

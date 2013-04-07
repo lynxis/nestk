@@ -25,6 +25,7 @@
 #include <ntk/camera/rgbd_calibration.h>
 
 #include <QObject>
+#include <QSharedPointer>
 
 namespace ntk
 {
@@ -288,6 +289,8 @@ public:
   const ntk::Ptr<FeatureSet>& getFeatures() const { return m_features; }
   bool                        hasFeatures() const { return static_cast<bool>(m_features); }
   void                        setFeatures(const ntk::Ptr<FeatureSet>& new_features);
+
+  void clear();
 
 private:
   cv::Mat3b m_rgb;
